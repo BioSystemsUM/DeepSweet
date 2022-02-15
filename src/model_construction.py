@@ -25,7 +25,10 @@ class Model(ABC):
         self.model = None
         self.hyperparameters_grid = {}
         self.construct_grid()
-        self.model_construction_function = model_constructor
+        if model_constructor is None:
+            self.construct_model()
+        else:
+            self.model_construction_function = model_constructor
 
     @property
     def model_type(self):
@@ -72,6 +75,9 @@ class Model(ABC):
     @abstractmethod
     def load(self, file_path):
         raise NotImplementedError
+
+    def define_model_hyperparameters(self, **hyperparameters):
+        self.model = self.model_construction_function(**hyperparameters)
 
     def construct_model(self):
         self.model_construction_function = self._construct_model()

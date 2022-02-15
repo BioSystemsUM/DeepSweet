@@ -27,7 +27,7 @@ class HyperparameterOptimiser(Step, ABC):
     def save_results(self):
         result_objects = [self.model_wrapper.model, self.all_results, self.best_hyperparams]
         if all([result_object is not None for result_object in result_objects]):
-            self.model_wrapper.save(self.folder_path, self.model_output_path)
+            self.model_wrapper.save(os.path.join(self.folder_path, self.model_output_path))
 
             hyperparameters_file = self.model_output_path.replace(".h5", "")
             out_file = open(os.path.join(self.folder_path, f"{hyperparameters_file}_hyperparameters.json"), "w")
