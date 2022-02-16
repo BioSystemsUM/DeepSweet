@@ -1,0 +1,1 @@
+{"task_type": "classification", "predictor_hidden_feats": 256, "predictor_dropout": 0.5, "n_attention_heads": 8, "learning_rate": 0.001, "graph_attention_layers": [32, 32, 32], "epochs": 40, "dropout": 0.0}

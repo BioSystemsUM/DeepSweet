@@ -92,7 +92,7 @@ class EndToEndHyperparameterOptimiser(HyperparameterOptimiser, ABC):
         optimizer = HyperparamOpt_CV(self.model_wrapper.model_construction_function)
 
         self.model_wrapper.model, self.best_hyperparams, self.all_results = \
-            optimizer.hyperparam_search('sklearn',
+            optimizer.hyperparam_search(self.model_wrapper.model_type,
                                         self.model_wrapper.hyperparameters_grid,
                                         self.train_dataset,
                                         self.opt_metric,

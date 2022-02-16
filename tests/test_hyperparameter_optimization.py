@@ -1,34 +1,66 @@
 from unittest import TestCase
 
-from loaders.Loaders import CSVLoader
+from compoundFeaturization import deepChemFeaturizers
 
-from hyperparameter_optimisation import SklearnKerasHyperparameterOptimiser
-import pandas
+from deepsweet_utils import IO
+from hyperparameter_optimisation import SklearnKerasHyperparameterOptimiser, EndToEndHyperparameterOptimiser
 
-from model_construction import RF
+from model_construction import RF, SVM, DNN, GAT
 
 
 class TestHyperparameterOptimization(TestCase):
 
     def setUp(self) -> None:
         dataset_path = "../resources/test_data/2d/train_dataset_Boruta.csv"
-        pandas_dset = pandas.read_csv(dataset_path)
-        columns = pandas_dset.columns[3:]
+        self.dataset = IO.load_dataset_with_features(dataset_path)
 
-        loader = CSVLoader(dataset_path,
-                           features_fields=list(columns),
-                           mols_field='mols',
-                           labels_fields='y')
-        dataset = loader.create_dataset()
+        self.rf = RF()
+        self.svm = SVM()
+        self.dnn = DNN(self.dataset)
+        self.gat = GAT()
 
-        rf = RF()
-        self.optimiser = SklearnKerasHyperparameterOptimiser(rf, dataset, 3,
-                                                             "roc_auc",
-                                                             1,
-                                                             123,
-                                                             "../resources/test_data/2d/",
-                                                             "Boruta_rf_model")
+    def test_rf_optimization(self):
+        optimiser_RF = SklearnKerasHyperparameterOptimiser(self.rf, self.dataset, 3,
+                                                           "roc_auc",
+                                                           1,
+                                                           123,
+                                                           "../resources/test_data/2d/",
+                                                           "Boruta_rf_model")
 
-    def test_fs(self):
-        self.optimiser.optimise()
-        self.optimiser.save_results()
+        optimiser_RF.optimise()
+        optimiser_RF.save_results()
+
+    def test_svm_optimization(self):
+        optimiser_SVM = SklearnKerasHyperparameterOptimiser(self.svm, self.dataset, 3,
+                                                            "roc_auc",
+                                                            1,
+                                                            123,
+                                                            "../resources/test_data/2d/",
+                                                            "Boruta_svm_model")
+
+        optimiser_SVM.optimise()
+        optimiser_SVM.save_results()
+
+    def test_dnn_optimization(self):
+        optimiser_dnn = SklearnKerasHyperparameterOptimiser(self.dnn, self.dataset, 3,
+                                                            "roc_auc",
+                                                            1,
+                                                            123,
+                                                            "../resources/test_data/atompair_fp/",
+                                                            "Boruta_dnn_model.h5")
+
+        optimiser_dnn.optimise()
+        optimiser_dnn.save_results()
+
+    def test_gat_optimization(self):
+        featurizer = deepChemFeaturizers.MolGraphConvFeat(use_edges=True)
+        optimiser_gat = EndToEndHyperparameterOptimiser(self.gat, self.dataset, 3,
+                                                        "roc_auc",
+                                                        1,
+                                                        123,
+                                                        featurizer,
+                                                        "../resources/test_data/atompair_fp/",
+                                                        "GAT.h5")
+
+        optimiser_gat.optimise()
+        optimiser_gat.save_results()

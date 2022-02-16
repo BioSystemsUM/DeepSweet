@@ -158,8 +158,9 @@ class RF(Model):
 
 class DNN(Model):
 
-    def __init__(self):
+    def __init__(self, train_dataset):
         model_type = "keras"
+        self.train_dataset = train_dataset
         super().__init__(model_type)
 
     def _save(self, output_path):
@@ -188,7 +189,8 @@ class DNN(Model):
             "batchnorm": [True, False],
             "epochs": [40],
             "batch_size": [200, 100, 50],
-            "verbose": [0]
+            "verbose": [0],
+            "input_dim": [self.train_dataset.X.shape[1]]
         }
 
     @staticmethod
