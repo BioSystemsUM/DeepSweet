@@ -122,5 +122,5 @@ optimiser_gat.save_results()
 
 ## Analyse results
 
-You can checkout the results file in the "results" folder. "all_results.csv" 
+You can checkout the results file in the "resources/results" folder. "all_results.csv" 
 enumerates the results for all metrics to all models.
