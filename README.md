@@ -10,10 +10,11 @@
     - [Generate features](#generate-features)
     - [Select features](#select-features)
     - [Hyperparameter optimization](#optimize-hyperparameters)
-    - [Analyse results](#)
-    - [Predict](#)
+    - [Analyse results](#analyse-results)
+<!---    - [Predict](#)
     - [Predict with ensemble](#)
     - [Feature explainability](#)
+--->
 
 
 ## Requirements
@@ -118,3 +119,8 @@ optimiser_gat.optimise()
 optimiser_gat.save_results()
 
 ```
+
+## Analyse results
+
+You can checkout the results file in the "results" folder. "all_results.csv" 
+enumerates the results for all metrics to all models.
