@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 
@@ -85,3 +86,12 @@ class IO:
         dataset = loader.create_dataset()
 
         return dataset
+
+    @staticmethod
+    def load_json_config(path: str) -> dict:
+        features_to_keep = os.path.join(path)
+        f = open(features_to_keep, )
+
+        data = json.load(f)
+
+        return data

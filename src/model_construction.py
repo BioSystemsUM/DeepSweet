@@ -273,15 +273,16 @@ class DNN(Model):
 
 class GAT(Model):
 
-    def __init__(self):
+    def __init__(self, device="cpu"):
         model_type = "deepchem"
+        self.device = device
         super().__init__(model_type)
 
     def _save(self, output_path):
         torch.save(self.model.model.model, output_path)
 
     def load(self, file_path, **kwargs):
-        model = torch.load(file_path)
+        model = torch.load(file_path, map_location=torch.device(self.device))
         model.eval()
 
         new_model = torch_models.GATModel(1, **kwargs)
@@ -315,15 +316,16 @@ class GAT(Model):
 
 class GCN(Model):
 
-    def __init__(self):
+    def __init__(self, device="cpu"):
         model_type = "deepchem"
+        self.device=device
         super().__init__(model_type)
 
     def _save(self, output_path):
         torch.save(self.model.model.model, output_path)
 
     def load(self, file_path, **kwargs):
-        model = torch.load(file_path)
+        model = torch.load(file_path, map_location=torch.device(self.device))
         model.eval()
 
         new_model = torch_models.GCNModel(1, **kwargs)

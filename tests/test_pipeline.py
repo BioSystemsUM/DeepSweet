@@ -84,12 +84,17 @@ class TestRunPipeline(TestCase):
         #                             "../resources/test_data/rdk"])
         # new_pipeline.register(selector)
 
-        feature_selection_methods = ["Boruta", "SelectFromModelFS", "KbestFS"]
+        feature_selection_methods = ["Boruta", "SelectFromModelFS", "KbestFS", "all"]
         ml_features = ["2d", "atompair_fp", "ecfp4", "ecfp8", "rdk"]
         new_pipeline = Pipeline()
         for ml_feature in ml_features:
             for feature_selection_method in feature_selection_methods:
-                dataset_path = f"../resources/test_data/{ml_feature}/train_dataset_{feature_selection_method}.csv"
+
+                if feature_selection_method == "all":
+                    dataset_path = f"../resources/test_data/{ml_feature}/train_dataset.csv"
+                else:
+                    dataset_path = f"../resources/test_data/{ml_feature}/train_dataset_{feature_selection_method}.csv"
+
                 dataset = IO.load_dataset_with_features(dataset_path)
 
                 rf = RF()
