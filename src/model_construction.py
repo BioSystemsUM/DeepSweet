@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 import joblib
 import torch
+from Datasets.Datasets import Dataset
 from deepchem.models import torch_models, GraphConvModel, TextCNNModel
 from deepchem.models.layers import DTNNEmbedding, Highway
 from models.DeepChemModels import DeepChemModel
@@ -75,6 +76,10 @@ class Model(ABC):
     @abstractmethod
     def load(self, file_path):
         raise NotImplementedError
+
+    def predict(self, test_dataset: Dataset):
+        y_predicted = self.model.predict(test_dataset)
+        return y_predicted
 
     def define_model_hyperparameters(self, **hyperparameters):
         self.model = self.model_construction_function(**hyperparameters)
@@ -460,6 +465,10 @@ class BiLSTM(Model):
         self.model.model = keras_model
 
     def construct_grid(self):
+
+        if self.train_dataset.X is None:
+            raise Exception("Pre-condition violated: Please call the RNNFeatureConstructor")
+
         self.hyperparameters_grid = {
 
             "LSTM_layers": [[256], [256, 256], [256, 256, 256], [128], [128, 128], [128, 128, 128],

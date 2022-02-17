@@ -76,3 +76,12 @@ class IO:
         dataset = loader.create_dataset()
 
         return dataset
+
+    @staticmethod
+    def load_dataset(dataset_path: str) -> Dataset:
+        loader = CSVLoader(dataset_path,
+                           mols_field='mols',
+                           labels_fields='y')
+        dataset = loader.create_dataset()
+
+        return dataset

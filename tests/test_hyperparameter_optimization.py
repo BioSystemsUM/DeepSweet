@@ -1,11 +1,13 @@
 from unittest import TestCase
 
 from compoundFeaturization import deepChemFeaturizers
+from deepchem.models import TextCNNModel
 
 from deepsweet_utils import IO
+from generate_features_rnn import RNNFeatureGenerator
 from hyperparameter_optimisation import SklearnKerasHyperparameterOptimiser, EndToEndHyperparameterOptimiser
 
-from model_construction import RF, SVM, DNN, GAT
+from model_construction import RF, SVM, DNN, GAT, BiLSTM, LSTM, GCN, TextCNN, GraphConv
 
 
 class TestHyperparameterOptimization(TestCase):
@@ -17,7 +19,18 @@ class TestHyperparameterOptimization(TestCase):
         self.rf = RF()
         self.svm = SVM()
         self.dnn = DNN(self.dataset)
+
+        self.train_dataset = IO.load_dataset("../resources/test_data/train_dataset.csv")
+        self.test_dataset = IO.load_dataset("../resources/test_data/test_dataset.csv")
+
         self.gat = GAT()
+        self.gcn = GCN()
+
+        self.full_dataset = self.train_dataset.merge([self.test_dataset])
+        self.full_dataset.ids = self.full_dataset.mols
+        char_dict, length = TextCNNModel.build_char_dict(self.full_dataset)
+        self.text_cnn = TextCNN(char_dict, length)
+        self.graph_conv = GraphConv(self.dataset)
 
     def test_rf_optimization(self):
         optimiser_RF = SklearnKerasHyperparameterOptimiser(self.rf, self.dataset, 3,
@@ -54,13 +67,28 @@ class TestHyperparameterOptimization(TestCase):
 
     def test_gat_optimization(self):
         featurizer = deepChemFeaturizers.MolGraphConvFeat(use_edges=True)
-        optimiser_gat = EndToEndHyperparameterOptimiser(self.gat, self.dataset, 3,
+        optimiser_gat = EndToEndHyperparameterOptimiser(self.gat, self.train_dataset, 3,
                                                         "roc_auc",
                                                         1,
                                                         123,
                                                         featurizer,
-                                                        "../resources/test_data/atompair_fp/",
+                                                        "../resources/test_data/GAT/",
                                                         "GAT.h5")
 
         optimiser_gat.optimise()
         optimiser_gat.save_results()
+
+    def test_bilstm(self):
+        featurizer = RNNFeatureGenerator(self.full_dataset)
+        featurizer.featurize(self.train_dataset)
+        self.bilstm = BiLSTM(self.train_dataset)
+        optimiser_bilstm = EndToEndHyperparameterOptimiser(self.bilstm, self.train_dataset, 3,
+                                                           "roc_auc",
+                                                           1,
+                                                           123,
+                                                           featurizer,
+                                                           "../resources/test_data/BiLSTM/",
+                                                           "BiLSTM.h5")
+
+        optimiser_bilstm.optimise()
+        optimiser_bilstm.save_results()

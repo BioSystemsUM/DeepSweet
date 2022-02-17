@@ -82,6 +82,7 @@ class EndToEndHyperparameterOptimiser(HyperparameterOptimiser, ABC):
     def __init__(self, model, train_dataset, cv, opt_metric, n_iter_search, seed, featurization_method, folder_path,
                  model_output_path):
         self.featurization_method = featurization_method
+        os.makedirs(folder_path, exist_ok=True)
 
         super().__init__(model, train_dataset, cv, opt_metric, n_iter_search, seed, folder_path,
                          model_output_path)
