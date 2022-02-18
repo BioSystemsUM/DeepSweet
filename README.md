@@ -36,6 +36,8 @@ Create a conda environment with python 3.7
     python setup.py install
 - conda install -c anaconda ipython
 - conda install shap
+- conda install jupyter
+- conda install seaborn
 
 ## Setup GPU
 ```python
@@ -125,13 +127,13 @@ optimiser_gat.save_results()
 from pipelines_and_results import run_ml_pipeline, run_splitters, run_dl_pipeline
 
 # run splitters
-run_splitters()
+run_splitters("resources/data/preprocessed_sweeteners_dataset.csv", "resources/test_data/")
 
 #run ML pipeline
-run_ml_pipeline()
+run_ml_pipeline("resources/test_data/")
 
 #run DL pipeline
-run_dl_pipeline()
+run_dl_pipeline("resources/test_data/")
 ```
 
 ## Analyse results
