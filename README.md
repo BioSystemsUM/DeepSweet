@@ -120,6 +120,20 @@ optimiser_gat.save_results()
 
 ```
 
+## Run pipeline all at once
+```python
+from pipelines_and_results import run_ml_pipeline, run_splitters, run_dl_pipeline
+
+# run splitters
+run_splitters()
+
+#run ML pipeline
+run_ml_pipeline()
+
+#run DL pipeline
+run_dl_pipeline()
+```
+
 ## Analyse results
 
 You can checkout the results file in the "resources/results" folder. "all_results.csv" 

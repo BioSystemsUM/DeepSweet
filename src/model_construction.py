@@ -1,3 +1,4 @@
+import json
 import os
 from abc import ABC, abstractmethod
 
@@ -67,6 +68,10 @@ class Model(ABC):
     def _save(self, output_path):
         raise NotImplementedError
 
+    @abstractmethod
+    def save_input_params(self, output_path):
+        raise NotImplementedError
+
     def save(self, output_path):
         if self.model is not None:
             self._save(output_path)
@@ -89,6 +94,9 @@ class Model(ABC):
 
 
 class SVM(Model):
+
+    def save_input_params(self, output_path):
+        pass
 
     def __init__(self):
         model_type = "sklearn"
@@ -124,6 +132,9 @@ class SVM(Model):
 
 
 class RF(Model):
+
+    def save_input_params(self, output_path):
+        pass
 
     def __init__(self):
         model_type = "sklearn"
@@ -162,6 +173,9 @@ class RF(Model):
 
 
 class DNN(Model):
+
+    def save_input_params(self, output_path):
+        pass
 
     def __init__(self, train_dataset):
         model_type = "keras"
@@ -273,6 +287,9 @@ class DNN(Model):
 
 class GAT(Model):
 
+    def save_input_params(self, output_path):
+        pass
+
     def __init__(self, device="cpu"):
         model_type = "deepchem"
         self.device = device
@@ -315,6 +332,9 @@ class GAT(Model):
 
 
 class GCN(Model):
+
+    def save_input_params(self, output_path):
+        pass
 
     def __init__(self, device="cpu"):
         model_type = "deepchem"
@@ -359,6 +379,9 @@ class GCN(Model):
 
 class GraphConv(Model):
 
+    def save_input_params(self, output_path):
+        pass
+
     def __init__(self, train_dataset):
         model_type = "deepchem"
         self.train_dataset = train_dataset
@@ -393,6 +416,8 @@ class GraphConv(Model):
 
 class TextCNN(Model):
 
+
+
     def __init__(self, char_dict, length):
         self.char_dict = char_dict
         self.length = length
@@ -411,6 +436,14 @@ class TextCNN(Model):
         model.model = tensorflow_model
 
         self.model = DeepChemModel(model)
+
+    def save_input_params(self, output_folder_path):
+        to_export = {"char_dict": self.char_dict,
+                     "length": self.length}
+
+        out_file = open(os.path.join(output_folder_path, "input_params.json"), "w")
+        json.dump(to_export, out_file)
+        out_file.close()
 
     def construct_grid(self):
         mode = 'classification'
@@ -465,6 +498,9 @@ class BiLSTM(Model):
         keras_model.model = model
         self.model = KerasModel(self.model_construction_function)
         self.model.model = keras_model
+
+    def save_input_params(self, output_folder_path):
+        pass
 
     def construct_grid(self):
 
@@ -561,6 +597,9 @@ class BiLSTM(Model):
 
 
 class LSTM(Model):
+
+    def save_input_params(self, output_path):
+        pass
 
     def __init__(self, train_dataset):
         model_type = "deepchem"

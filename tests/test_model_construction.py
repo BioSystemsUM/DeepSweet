@@ -5,7 +5,8 @@ from unittest import TestCase
 from compoundFeaturization import deepChemFeaturizers
 
 from deepsweet_utils import IO
-from model_construction import SVM, RF, DNN, GAT, GCN, TextCNN
+from generate_features_rnn import RNNFeatureGenerator
+from model_construction import SVM, RF, DNN, GAT, GCN, TextCNN, BiLSTM, GraphConv
 
 
 class TestModelConstruction(TestCase):
@@ -90,6 +91,40 @@ class TestModelConstruction(TestCase):
 
         model = TextCNN(hyperparams["char_dict"], hyperparams["length"])
         model.load("../resources/models/TextCNN/TextCNN.h5")
+
+        y_predict = model.predict(test_dataset)
+        print(y_predict)
+
+    def test_load_BiLSTM_and_predict(self):
+        test_dataset = IO.load_dataset("../resources/models/test_dataset.csv")
+
+        f = open(os.path.join("../resources/models/BiLSTM/", "input_params.json"), )
+        hyperparams = json.load(f)
+
+        descriptor = RNNFeatureGenerator(hyperparams["unique_chars"],
+                                         hyperparams["char_to_int"],
+                                         hyperparams["max_len"])
+        descriptor.featurize(test_dataset)
+
+        model = BiLSTM(test_dataset)
+        model.load("../resources/models/BiLSTM/BiLSTM.h5")
+
+        y_predict = model.predict(test_dataset)
+        print(y_predict)
+
+    def test_load_graphconv_and_predict(self):
+        train_dataset = IO.load_dataset("../resources/models/train_dataset.csv")
+        featurizer = deepChemFeaturizers.ConvMolFeat()
+        featurizer.featurize(train_dataset)
+
+        f = open(os.path.join("../resources/models/GraphConv/", "GraphConv_hyperparameters.json"), )
+        best_hyperparams = json.load(f)
+
+        test_dataset = IO.load_dataset("../resources/models/test_dataset.csv")
+        featurizer.featurize(test_dataset)
+
+        model = GraphConv(test_dataset)
+        model.load("../resources/models/GraphConv/GraphConv.h5", **best_hyperparams)
 
         y_predict = model.predict(test_dataset)
         print(y_predict)

@@ -68,23 +68,23 @@ class TestRunPipeline(TestCase):
         new_pipeline.run()
 
     def test_run_the_whole_features_pipeline_at_once(self):
-        # new_pipeline = Pipeline()
-        #
-        # splitter = DatasetSplitter("../resources/data/preprocessed_sweeteners_dataset.csv", "mols", "y", 0.5,
-        #                            "../resources/test_data/")
-        # new_pipeline.register(splitter)
-        #
-        # generator = FeaturesGenerator("../resources/test_data/")
-        # new_pipeline.register(generator)
-        #
-        # selector = FeatureSelector(["../resources/test_data/2d",
-        #                             "../resources/test_data/atompair_fp",
-        #                             "../resources/test_data/ecfp4",
-        #                             "../resources/test_data/ecfp8",
-        #                             "../resources/test_data/rdk"])
-        # new_pipeline.register(selector)
+        new_pipeline = Pipeline()
 
-        feature_selection_methods = ["Boruta", "SelectFromModelFS", "KbestFS", "all"]
+        splitter = DatasetSplitter("../resources/data/preprocessed_sweeteners_dataset.csv", "mols", "y", 0.5,
+                                   "../resources/test_data/")
+        new_pipeline.register(splitter)
+
+        generator = FeaturesGenerator("../resources/test_data/")
+        new_pipeline.register(generator)
+
+        selector = FeatureSelector(["../resources/test_data/2d",
+                                    "../resources/test_data/atompair_fp",
+                                    "../resources/test_data/ecfp4",
+                                    "../resources/test_data/ecfp8",
+                                    "../resources/test_data/rdk"])
+        new_pipeline.register(selector)
+
+        feature_selection_methods = ["all", "Boruta", "SelectFromModelFS", "KbestFS"]
         ml_features = ["2d", "atompair_fp", "ecfp4", "ecfp8", "rdk"]
         new_pipeline = Pipeline()
         for ml_feature in ml_features:

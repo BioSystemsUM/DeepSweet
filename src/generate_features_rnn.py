@@ -1,11 +1,33 @@
+import json
+import os
+
 from SmilesPE.pretokenizer import atomwise_tokenizer
 import numpy as np
 
 
 class RNNFeatureGenerator:
 
-    def __init__(self, full_dataset):
+    def __init__(self, unique_chars=None, char_to_int=None, max_len=None):
         super().__init__()
+        if unique_chars is not None:
+            self.unique_chars = unique_chars
+        if char_to_int is not None:
+            self.char_to_int = char_to_int
+        if max_len is not None:
+            self.max_len = max_len
+
+    def save_input_params(self, output_folder_path):
+        to_export = {"unique_chars": self.unique_chars,
+                     "char_to_int": self.char_to_int,
+                     "max_len": self.max_len}
+
+        os.makedirs(output_folder_path, exist_ok=True)
+
+        out_file = open(os.path.join(output_folder_path, "input_params.json"), "w")
+        json.dump(to_export, out_file)
+        out_file.close()
+
+    def set_instance_variables_using_dataset(self, full_dataset):
         text = ''.join(full_dataset.mols)
         self.unique_chars = sorted(list(set(atomwise_tokenizer(text))))
         self.char_to_int = dict((c, i) for i, c in enumerate(self.unique_chars))
@@ -104,7 +126,7 @@ class RNNFeatureGenerator:
 
         return dataset
 
-    def featurize(self, train_dataset):
+    def featurize(self, dataset, balance_dataset=False):
 
-        self.generate_dataset(train_dataset, True)
-        return train_dataset
+        self.generate_dataset(dataset, balance_dataset)
+        return dataset
