@@ -163,19 +163,19 @@ molecules = ["CN1CCC[C@H]1C2=CN=CC=C2", "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"]
 
 # predict with DNN trained with RDK fingerprints with all features
 dnn = DeepSweetDNN(models_folder_path, featurization_method="rdk", feature_selection_method="all")
-predictions = dnn.predict(molecules)
+predictions, dataset = dnn.predict(molecules)
 
 # predict with RF trained with 2D descriptors using Boruta as feature selection method
 dnn = DeepSweetRF(models_folder_path, featurization_method="2d", feature_selection_method="Boruta")
-predictions2 = dnn.predict(molecules)
+predictions2, dataset = dnn.predict(molecules)
 
 # predict with TextCNN
 textcnn = DeepSweetTextCNN(models_folder_path)
-predictions3 = textcnn.predict(molecules)
+predictions3, dataset = textcnn.predict(molecules)
 
 # predict with GAT
 gat = DeepSweetGAT(models_folder_path)
-predictions4 = gat.predict(molecules)
+predictions4, dataset = gat.predict(molecules)
 ```
 
 ## Predict with ensemble
@@ -196,7 +196,7 @@ list_of_models.append(DeepSweetBiLSTM(models_folder_path))
 
 ensemble = Ensemble(list_of_models, models_folder_path)
 
-predictions, dataset, _ = ensemble.predict(molecules)
+predictions, dataset, not_converted_molecules = ensemble.predict(molecules)
 ```
 
 ## Feature explainability
