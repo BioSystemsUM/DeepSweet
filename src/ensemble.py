@@ -7,6 +7,7 @@ from rdkit.Chem import MolFromSmiles, Mol
 from standardizer.CustomStandardizer import CustomStandardizer
 
 from deepsweet_models import PreBuiltModel
+from deepsweet_utils import PipelineUtils
 from generate_features_rnn import RNNFeatureGenerator
 from model_construction import Model
 
@@ -15,38 +16,16 @@ import numpy as np
 
 class Ensemble:
 
-    def __init__(self, list_of_models: Union[List[Model], List[PreBuiltModel]]):
+    def __init__(self, list_of_models: Union[List[Model], List[PreBuiltModel]], models_folder_path: str):
         self.list_of_models = list_of_models
+        self.models_folder_path = models_folder_path
 
-    @staticmethod
-    def filter_valid_sequences(dataset, dataset_folder_path):
+    def predict(self, molecules: Union[List[Mol], List[str]], ids=None):
 
-        selected_ids = []
-        not_valid_molecules = []
+        if ids is None:
+            ids = [i for i in range(len(molecules))]
 
-        f = open(os.path.join(dataset_folder_path, "BiLSTM", "input_params.json"), )
-        input_params = json.load(f)
-        unique_chars = input_params["unique_chars"]
-        char_to_int = input_params["char_to_int"]
-        length = input_params["max_len"]
-        rnn_feat_gen = RNNFeatureGenerator(unique_chars, char_to_int, length)
-
-        for i, mol_smiles in enumerate(dataset.mols):
-            try:
-                mol = MolFromSmiles(mol_smiles)
-                encoding = rnn_feat_gen.smiles_encoder(mol_smiles)
-                if mol is not None and encoding is not None:
-                    selected_ids.append(dataset.ids[i])
-                    not_valid_molecules.append(mol_smiles)
-            except:
-                pass
-
-        dataset.select(selected_ids, axis=0)
-        return dataset, not_valid_molecules
-
-    def predict(self, molecules: Union[List[Mol], List[str]], models_folder_path: str):
-
-        dataset = NumpyDataset(molecules)
+        dataset = NumpyDataset(molecules, ids=np.array(ids))
         standardisation_params = {
             'REMOVE_ISOTOPE': True,
             'NEUTRALISE_CHARGE': True,
@@ -57,7 +36,7 @@ class Ensemble:
             'NEUTRALISE_CHARGE_LATE': True}
 
         CustomStandardizer(params=standardisation_params).standardize(dataset)
-        dataset, not_valid_molecules = self.filter_valid_sequences(dataset, models_folder_path)
+        dataset, not_valid_molecules = PipelineUtils.filter_valid_sequences(self.models_folder_path, dataset)
         all_predictions = []
 
         for i, model in enumerate(self.list_of_models):

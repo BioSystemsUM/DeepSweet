@@ -1,30 +1,23 @@
 import json
 import os
 from abc import ABC, abstractmethod
-from typing import List, Union
 
 import joblib
 import torch
-from Datasets.Datasets import Dataset, NumpyDataset
+from Datasets.Datasets import Dataset
 from deepchem.models import torch_models, GraphConvModel, TextCNNModel
 from deepchem.models.layers import DTNNEmbedding, Highway
 from models.DeepChemModels import DeepChemModel
-from rdkit.Chem import Mol, MolFromSmiles
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 
 import tensorflow as tf
-from standardizer.CustomStandardizer import CustomStandardizer
 
 from tensorflow.keras.layers import Input, Dropout, Dense, BatchNormalization, Activation
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.regularizers import l1_l2
 from tensorflow.python.keras.layers import Bidirectional, CuDNNLSTM
 from tensorflow.python.keras.wrappers.scikit_learn import KerasClassifier
-
-from generate_features_rnn import RNNFeatureGenerator
-
-import numpy as np
 
 
 class Model(ABC):
@@ -36,7 +29,6 @@ class Model(ABC):
         self.construct_model()
         if construct_grid:
             self.construct_grid()
-
 
     @property
     def model_type(self):
@@ -709,5 +701,3 @@ class LSTM(Model):
             return model
 
         return lstm_builder
-
-

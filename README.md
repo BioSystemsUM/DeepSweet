@@ -3,18 +3,17 @@
 ### Table of contents:
 
 - [Requirements](#requirements)
-- [Getting Started](#getting-started)
-    - [Setup GPU](#setup-gpu)
-    - [Prepare the dataset](#prepare-dataset)
-    - [Split dataset](#split-dataset)
-    - [Generate features](#generate-features)
-    - [Select features](#select-features)
-    - [Hyperparameter optimization](#optimize-hyperparameters)
-    - [Analyse results](#analyse-results)
-<!---    - [Predict](#)
-    - [Predict with ensemble](#)
-    - [Feature explainability](#)
---->
+- [Setup GPU](#setup-gpu)
+- [Prepare the dataset](#prepare-dataset)
+- [Split dataset](#split-dataset)
+- [Generate features](#generate-features)
+- [Select features](#select-features)
+- [Hyperparameter optimization](#optimize-hyperparameters)
+- [Generate results](#generate-results)
+- [Analyse results](#analyse-results)
+- [Predict with built models](#predict-with-built-models)
+- [Predict with ensemble](#predict-with-ensemble)
+- [Feature explai`nability](#feature-explainability)
 
 
 ## Requirements
@@ -136,7 +135,75 @@ run_ml_pipeline("resources/test_data/")
 run_dl_pipeline("resources/test_data/")
 ```
 
+## Generate results
+```python
+from reports import ResultsReport
+
+# run splitters
+report_generator = ResultsReport("cuda:0", "resources/test_data/train_dataset.csv", 
+              "resources/test_data/test_dataset.csv", 
+              "resources/data/blend_test_set.csv")
+
+report_generator.run_all_ml("resources/models", "resources/results/ML_DNN_results.csv")
+report_generator.run_all_dl("resources/models", "resources/results/EndToEnd_results.csv")
+```
+
 ## Analyse results
 
 You can checkout the results file in the "resources/results" folder. "all_results.csv" 
 enumerates the results for all metrics to all models.
+
+## Predict with built models
+
+```python
+from deepsweet_models import DeepSweetDNN, DeepSweetGAT, DeepSweetRF, DeepSweetTextCNN
+
+models_folder_path = "../resources/models/"
+molecules = ["CN1CCC[C@H]1C2=CN=CC=C2", "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"]
+
+# predict with DNN trained with RDK fingerprints with all features
+dnn = DeepSweetDNN(models_folder_path, featurization_method="rdk", feature_selection_method="all")
+predictions = dnn.predict(molecules)
+
+# predict with RF trained with 2D descriptors using Boruta as feature selection method
+dnn = DeepSweetRF(models_folder_path, featurization_method="2d", feature_selection_method="Boruta")
+predictions2 = dnn.predict(molecules)
+
+# predict with TextCNN
+textcnn = DeepSweetTextCNN(models_folder_path)
+predictions3 = textcnn.predict(molecules)
+
+# predict with GAT
+gat = DeepSweetGAT(models_folder_path)
+predictions4 = gat.predict(molecules)
+```
+
+## Predict with ensemble
+```python
+from deepsweet_models import DeepSweetDNN, DeepSweetGCN, DeepSweetRF, DeepSweetSVM, DeepSweetBiLSTM
+from ensemble import Ensemble
+
+models_folder_path = "../resources/models/"
+molecules = ["CN1CCC[C@H]1C2=CN=CC=C2", "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"]
+
+list_of_models = []
+list_of_models.append(DeepSweetRF(models_folder_path, "2d", "SelectFromModelFS"))
+list_of_models.append(DeepSweetDNN(models_folder_path, "rdk", "all"))
+list_of_models.append(DeepSweetGCN(models_folder_path))
+list_of_models.append(DeepSweetSVM(models_folder_path, "ecfp4", "all"))
+list_of_models.append(DeepSweetDNN(models_folder_path, "atompair_fp", "SelectFromModelFS"))
+list_of_models.append(DeepSweetBiLSTM(models_folder_path))
+
+ensemble = Ensemble(list_of_models, models_folder_path)
+
+predictions, dataset, _ = ensemble.predict(molecules)
+```
+
+## Feature explainability
+
+The whole analysis on feature explainability using SHAP values is contained both in "resources/SHAP_analysis" and "notebooks/SHAP_analysis".
+
+## Repurposing PubChem molecules
+
+- Run the two filters on PubChem - "notebooks/run_puchem.ipynb"
+- Search for strong sweeteners derivatives on the filtered molecules - "notebooks/pubchem_repurposed_molecules_analysis.ipynb".

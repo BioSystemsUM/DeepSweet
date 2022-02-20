@@ -9,6 +9,7 @@ from compoundFeaturization import deepChemFeaturizers
 from compoundFeaturization.rdkitDescriptors import TwoDimensionDescriptors
 from compoundFeaturization.rdkitFingerprints import RDKFingerprint, MorganFingerprint, AtomPairFingerprint
 from loaders.Loaders import CSVLoader
+from rdkit.Chem import MolFromSmiles
 from scalers.sklearnScalers import MinMaxScaler
 from standardizer.CustomStandardizer import CustomStandardizer
 from tensorflow.compat.v1 import ConfigProto
@@ -142,6 +143,33 @@ class PipelineUtils:
             scaler.transform(dataset)
 
         return dataset
+
+    @staticmethod
+    def filter_valid_sequences(models_folder_path, dataset):
+
+        selected_ids = []
+        not_valid_molecules = []
+
+        f = open(os.path.join(models_folder_path, "BiLSTM", "input_params.json"), )
+        input_params = json.load(f)
+        unique_chars = input_params["unique_chars"]
+        char_to_int = input_params["char_to_int"]
+        length = input_params["max_len"]
+        rnn_feat_gen = RNNFeatureGenerator(unique_chars, char_to_int, length)
+
+        for i, mol_smiles in enumerate(dataset.mols):
+            try:
+                mol = MolFromSmiles(mol_smiles)
+                encoding = rnn_feat_gen.smiles_encoder(mol_smiles)
+                if mol is not None and encoding is not None:
+                    selected_ids.append(dataset.ids[i])
+                else:
+                    not_valid_molecules.append(mol_smiles)
+            except:
+                not_valid_molecules.append(mol_smiles)
+
+        dataset.select(selected_ids, axis=0)
+        return dataset, not_valid_molecules
 
     @staticmethod
     def featurize_dataset_dl(dataset_folder_path, dataset):

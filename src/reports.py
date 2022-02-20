@@ -262,7 +262,7 @@ class ResultsReport(Report):
 
         return model
 
-    def run_all_ml(self, models_folder_path):
+    def run_all_ml(self, models_folder_path, output_file_path):
         results = DataFrame(columns=["descriptor", "feature selection", "algorithm", "test_roc_auc_score",
                                      "test_precision_score", "test_ner_score", "test_recall_score", "test_f1_score",
                                      "blend_roc_auc_score", "blend_precision_score", "blend_ner_score",
@@ -300,7 +300,7 @@ class ResultsReport(Report):
                         results.at[last_id, 3:8] = scores
                         results.at[last_id, 8:13] = blend_scores
 
-        results.to_csv("ML_DNN_results.csv", index=False)
+        results.to_csv(output_file_path, index=False)
 
     def predict_on_both_sets(self, file, dataset_folder_path):
         model = self.load_model_accordingly(file, dataset_folder_path)
@@ -347,7 +347,7 @@ class ResultsReport(Report):
 
         return test_set_results, blend_set_results
 
-    def run_all_dl(self, models_folder_path):
+    def run_all_dl(self, models_folder_path, output_file_path):
 
         results = DataFrame(columns=["algorithm", "test_roc_auc_score",
                                      "test_precision_score", "test_ner_score", "test_recall_score", "test_f1_score",
@@ -395,3 +395,5 @@ class ResultsReport(Report):
                             results.at[last_id, "algorithm"] = algorithm
                             results.at[last_id, 1:6] = test_set_results
                             results.at[last_id, 6:11] = blend_set_results
+
+        results.to_csv(output_file_path, index=False)

@@ -10,6 +10,8 @@ from rdkit.Chem import Mol
 from deepsweet_utils import IO, PipelineUtils
 from model_construction import SVM, Model, RF, DNN, GAT, GCN, BiLSTM, LSTM, TextCNN, GraphConv
 
+import numpy as np
+
 
 class PreBuiltModel(ABC):
 
@@ -30,7 +32,7 @@ class PreBuiltModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def predict(self, molecules: List[str], standardize: bool = True):
+    def predict(self, molecules: List[str], ids: List[str] = None, standardize: bool = True):
         raise NotImplementedError
 
 
@@ -44,9 +46,12 @@ class PreBuiltMLDNN(PreBuiltModel, ABC):
         self.feature_selection_method = feature_selection_method
         self.load()
 
-    def predict(self, molecules: List[str], standardize: bool = True):
+    def predict(self, molecules: List[str], ids: List[str] = None, standardize: bool = True):
+        if ids is None:
+            ids = [i for i in range(len(molecules))]
+
         if not isinstance(molecules, Dataset):
-            dataset = NumpyDataset(molecules)
+            dataset = NumpyDataset(molecules, ids=np.array(ids))
         else:
             dataset = molecules
 
@@ -59,7 +64,7 @@ class PreBuiltMLDNN(PreBuiltModel, ABC):
 
         y_predicted = self.model.predict(dataset)
 
-        return y_predicted
+        return y_predicted, dataset
 
 
 class DeepSweetSVM(PreBuiltMLDNN):
@@ -112,10 +117,12 @@ class PreBuiltEntToEnd(PreBuiltModel, ABC):
         self.model_folder_path = os.path.join(model_folder_path, method)
         self.load()
 
-    def predict(self, molecules: Union[List[str], List[Mol], Dataset], standardize=True):
+    def predict(self, molecules: Union[List[str], List[Mol], Dataset], ids: List[str] = None, standardize: bool = True):
+        if ids is None:
+            ids = [i for i in range(len(molecules))]
 
         if not isinstance(molecules, Dataset):
-            dataset = NumpyDataset(molecules)
+            dataset = NumpyDataset(molecules, ids=np.array(ids))
         else:
             dataset = molecules
 
@@ -126,7 +133,7 @@ class PreBuiltEntToEnd(PreBuiltModel, ABC):
 
         y_predicted = self.model.predict(dataset)
 
-        return y_predicted
+        return y_predicted, dataset
 
 
 class DeepSweetGAT(PreBuiltEntToEnd):

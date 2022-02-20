@@ -171,5 +171,5 @@ class TestPreBuiltModels(TestCase):
         list_of_models = [DeepSweetTextCNN(self.models_folder_path),
                           DeepSweetGCN(self.models_folder_path),
                           DeepSweetDNN(self.models_folder_path, "rdk", "all")]
-        ensemble = Ensemble(list_of_models)
-        ensemble.predict(self.molecules, self.models_folder_path)
+        ensemble = Ensemble(list_of_models, self.models_folder_path)
+        print(ensemble.predict(self.molecules))
