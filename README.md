@@ -13,7 +13,8 @@
 - [Analyse results](#analyse-results)
 - [Predict with built models](#predict-with-built-models)
 - [Predict with ensemble](#predict-with-ensemble)
-- [Feature explai`nability](#feature-explainability)
+- [Feature explainability](#feature-explainability)
+- [Repurposing PubChem molecules](#repurposing-pubchem-molecules)
 
 
 ## Requirements
