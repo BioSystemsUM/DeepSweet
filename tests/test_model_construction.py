@@ -4,7 +4,10 @@ from unittest import TestCase
 
 from compoundFeaturization import deepChemFeaturizers
 
+from deepsweet_models import DeepSweetSVM, DeepSweetRF, DeepSweetDNN, DeepSweetGAT, DeepSweetGraphConv, \
+    DeepSweetTextCNN, DeepSweetGCN
 from deepsweet_utils import IO
+from ensemble import Ensemble
 from generate_features_rnn import RNNFeatureGenerator
 from model_construction import SVM, RF, DNN, GAT, GCN, TextCNN, BiLSTM, GraphConv
 
@@ -128,3 +131,45 @@ class TestModelConstruction(TestCase):
 
         y_predict = model.predict(test_dataset)
         print(y_predict)
+
+
+class TestPreBuiltModels(TestCase):
+
+    def setUp(self) -> None:
+        self.models_folder_path = "../resources/models/"
+        self.molecules = ["CN1CCC[C@H]1C2=CN=CC=C2", "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"]
+
+    def test_svm(self):
+        svm = DeepSweetSVM(self.models_folder_path, "2d", "Boruta")
+        print(svm.predict(self.molecules))
+
+    def test_rf(self):
+        rf = DeepSweetRF(self.models_folder_path, "2d", "SelectFromModelFS")
+        print(rf.predict(self.molecules))
+
+    def test_dnn(self):
+        rf = DeepSweetDNN(self.models_folder_path, "ecfp4", "KbestFS")
+        print(rf.predict(self.molecules))
+
+    def test_dnn_all(self):
+        rf = DeepSweetDNN(self.models_folder_path, "ecfp4", "all")
+        print(rf.predict(self.molecules))
+
+    def test_GAT(self):
+        rf = DeepSweetGAT(self.models_folder_path)
+        print(rf.predict(self.molecules))
+
+    def test_GraphConv(self):
+        rf = DeepSweetGraphConv(self.models_folder_path)
+        print(rf.predict(self.molecules))
+
+    def test_TextCNN(self):
+        rf = DeepSweetTextCNN(self.models_folder_path)
+        print(rf.predict(self.molecules))
+
+    def test_ensemble(self):
+        list_of_models = [DeepSweetTextCNN(self.models_folder_path),
+                          DeepSweetGCN(self.models_folder_path),
+                          DeepSweetDNN(self.models_folder_path, "rdk", "all")]
+        ensemble = Ensemble(list_of_models)
+        ensemble.predict(self.molecules, self.models_folder_path)

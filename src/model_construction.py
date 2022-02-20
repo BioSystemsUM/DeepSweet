@@ -1,17 +1,20 @@
 import json
 import os
 from abc import ABC, abstractmethod
+from typing import List, Union
 
 import joblib
 import torch
-from Datasets.Datasets import Dataset
+from Datasets.Datasets import Dataset, NumpyDataset
 from deepchem.models import torch_models, GraphConvModel, TextCNNModel
 from deepchem.models.layers import DTNNEmbedding, Highway
 from models.DeepChemModels import DeepChemModel
+from rdkit.Chem import Mol, MolFromSmiles
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 
 import tensorflow as tf
+from standardizer.CustomStandardizer import CustomStandardizer
 
 from tensorflow.keras.layers import Input, Dropout, Dense, BatchNormalization, Activation
 from tensorflow.keras.models import Sequential
@@ -19,18 +22,21 @@ from tensorflow.keras.regularizers import l1_l2
 from tensorflow.python.keras.layers import Bidirectional, CuDNNLSTM
 from tensorflow.python.keras.wrappers.scikit_learn import KerasClassifier
 
+from generate_features_rnn import RNNFeatureGenerator
+
+import numpy as np
+
 
 class Model(ABC):
 
-    def __init__(self, model_type, model_constructor=None):
+    def __init__(self, model_type, construct_grid=True):
         self.model_type = model_type
         self.model = None
         self.hyperparameters_grid = {}
-        self.construct_grid()
-        if model_constructor is None:
-            self.construct_model()
-        else:
-            self.model_construction_function = model_constructor
+        self.construct_model()
+        if construct_grid:
+            self.construct_grid()
+
 
     @property
     def model_type(self):
@@ -83,6 +89,7 @@ class Model(ABC):
         raise NotImplementedError
 
     def predict(self, test_dataset: Dataset):
+
         y_predicted = self.model.predict(test_dataset)
         return y_predicted
 
@@ -98,9 +105,9 @@ class SVM(Model):
     def save_input_params(self, output_path):
         pass
 
-    def __init__(self):
+    def __init__(self, construct_grid=True):
         model_type = "sklearn"
-        super().__init__(model_type)
+        super().__init__(model_type, construct_grid)
 
     def _save(self, output_path):
         joblib.dump(self.model, output_path)
@@ -177,10 +184,10 @@ class DNN(Model):
     def save_input_params(self, output_path):
         pass
 
-    def __init__(self, train_dataset):
+    def __init__(self, train_dataset, construct_grid=True):
         model_type = "keras"
         self.train_dataset = train_dataset
-        super().__init__(model_type)
+        super().__init__(model_type, construct_grid)
 
     def _save(self, output_path):
 
@@ -338,7 +345,7 @@ class GCN(Model):
 
     def __init__(self, device="cpu"):
         model_type = "deepchem"
-        self.device=device
+        self.device = device
         super().__init__(model_type)
 
     def _save(self, output_path):
@@ -382,10 +389,10 @@ class GraphConv(Model):
     def save_input_params(self, output_path):
         pass
 
-    def __init__(self, train_dataset):
+    def __init__(self, train_dataset, construct_grid=True):
         model_type = "deepchem"
         self.train_dataset = train_dataset
-        super().__init__(model_type)
+        super().__init__(model_type, construct_grid)
 
     def _save(self, output_path):
         torch.save(self.model.model.model, output_path)
@@ -415,8 +422,6 @@ class GraphConv(Model):
 
 
 class TextCNN(Model):
-
-
 
     def __init__(self, char_dict, length):
         self.char_dict = char_dict
@@ -480,10 +485,10 @@ class TextCNN(Model):
 
 class BiLSTM(Model):
 
-    def __init__(self, train_dataset):
+    def __init__(self, train_dataset, construct_grid=True):
         model_type = "deepchem"
         self.train_dataset = train_dataset
-        super().__init__(model_type)
+        super().__init__(model_type, construct_grid)
 
     def _save(self, output_path):
         self.model.model.model.save(output_path)
@@ -601,10 +606,10 @@ class LSTM(Model):
     def save_input_params(self, output_path):
         pass
 
-    def __init__(self, train_dataset):
+    def __init__(self, train_dataset, construct_grid=True):
         model_type = "deepchem"
         self.train_dataset = train_dataset
-        super().__init__(model_type)
+        super().__init__(model_type, construct_grid)
 
     def _save(self, output_path):
         self.model.model.model.save(output_path)
@@ -704,3 +709,5 @@ class LSTM(Model):
             return model
 
         return lstm_builder
+
+

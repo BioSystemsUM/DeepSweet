@@ -5,11 +5,18 @@ import sys
 import pandas
 import tensorflow as tf
 from Datasets.Datasets import Dataset
+from compoundFeaturization import deepChemFeaturizers
+from compoundFeaturization.rdkitDescriptors import TwoDimensionDescriptors
+from compoundFeaturization.rdkitFingerprints import RDKFingerprint, MorganFingerprint, AtomPairFingerprint
 from loaders.Loaders import CSVLoader
+from scalers.sklearnScalers import MinMaxScaler
+from standardizer.CustomStandardizer import CustomStandardizer
 from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
 from tensorflow.compat.v1 import Session
 import tensorflow.compat.v1.keras.backend as K
+
+from generate_features_rnn import RNNFeatureGenerator
 
 
 class DeviceUtils:
@@ -95,3 +102,77 @@ class IO:
         data = json.load(f)
 
         return data
+
+class PipelineUtils:
+
+    @staticmethod
+    def standardize_dataset(dataset):
+        standardisation_params = {
+            'REMOVE_ISOTOPE': True,
+            'NEUTRALISE_CHARGE': True,
+            'REMOVE_STEREO': False,
+            'KEEP_BIGGEST': True,
+            'ADD_HYDROGEN': False,
+            'KEKULIZE': True,
+            'NEUTRALISE_CHARGE_LATE': True}
+
+        CustomStandardizer(params=standardisation_params).standardize(dataset)
+
+        return dataset
+
+    @staticmethod
+    def featurize_dataset_ml(dataset, featurization_method, model_folder_path):
+        fingerprints = None
+        if "rdk" in featurization_method:
+            fingerprints = RDKFingerprint()
+        elif "ecfp8" in featurization_method:
+            fingerprints = MorganFingerprint(radius=4, chiral=True)
+        elif "ecfp4" in featurization_method:
+            fingerprints = MorganFingerprint(chiral=True)
+        elif "atompair" in featurization_method:
+            fingerprints = AtomPairFingerprint(includeChirality=True)
+        elif "2d" in featurization_method:
+            fingerprints = TwoDimensionDescriptors()
+
+        fingerprints.featurize(dataset)
+
+        if "2d" in model_folder_path:
+            scaler = MinMaxScaler()
+            scaler.load_scaler(os.path.join(model_folder_path, "scaler"))
+            scaler.transform(dataset)
+
+        return dataset
+
+    @staticmethod
+    def featurize_dataset_dl(dataset_folder_path, dataset):
+        if "GAT" in dataset_folder_path or "GCN" in dataset_folder_path:
+            descriptor = deepChemFeaturizers.MolGraphConvFeat(use_edges=True)
+            descriptor.featurize(dataset)
+        elif "TextCNN" in dataset_folder_path:
+            descriptor = deepChemFeaturizers.RawFeat()
+            descriptor.featurize(dataset)
+        elif "GraphConv" in dataset_folder_path:
+            descriptor = deepChemFeaturizers.ConvMolFeat()
+            descriptor.featurize(dataset)
+        elif "LSTM" in dataset_folder_path or "BiLSTM":
+            f = open(os.path.join(dataset_folder_path, "input_params.json"), )
+            hyperparams = json.load(f)
+
+            descriptor = RNNFeatureGenerator(hyperparams["unique_chars"],
+                                             hyperparams["char_to_int"],
+                                             hyperparams["max_len"])
+
+            descriptor.featurize(dataset)
+
+        return dataset
+
+    @staticmethod
+    def select_features(dataset, feature_selection_method, model_folder_path):
+        f = open(os.path.join(model_folder_path, "feature_selection_config.json"), )
+        fs = json.load(f)
+
+        if feature_selection_method != "all":
+            features_to_keep = sorted(fs[feature_selection_method])
+            dataset.select_features(features_to_keep)
+
+        return dataset

@@ -1,4 +1,6 @@
 .idea
 .pytest_cache
 resources/test_data/*
+DeepMol/build
+DeepMol/dist
 !resources/test_data/.keep
