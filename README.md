@@ -9,6 +9,7 @@
 - [Generate features](#generate-features)
 - [Select features](#select-features)
 - [Hyperparameter optimization](#optimize-hyperparameters)
+- [Run pipeline all at once](#run-pipeline-all-at-once)
 - [Generate results](#generate-results)
 - [Analyse results](#analyse-results)
 - [Predict with built models](#predict-with-built-models)
