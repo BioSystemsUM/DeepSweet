@@ -109,7 +109,7 @@ gat = GAT()
 featurizer = deepChemFeaturizers.MolGraphConvFeat(use_edges=True)
 optimiser_gat = EndToEndHyperparameterOptimiser(model=gat, 
                                                 train_dataset=dataset, 
-                                                cv=3,
+                                                cv=10,
                                                 opt_metric="roc_auc",
                                                 n_iter_search=30,
                                                 seed=123,
