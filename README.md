@@ -9,6 +9,7 @@
 - [Generate features](#generate-features)
 - [Select features](#select-features)
 - [Hyperparameter optimization](#optimize-hyperparameters)
+- [Run pipeline all at once](#run-pipeline-all-at-once)
 - [Generate results](#generate-results)
 - [Analyse results](#analyse-results)
 - [Predict with built models](#predict-with-built-models)
@@ -109,7 +110,7 @@ gat = GAT()
 featurizer = deepChemFeaturizers.MolGraphConvFeat(use_edges=True)
 optimiser_gat = EndToEndHyperparameterOptimiser(model=gat, 
                                                 train_dataset=dataset, 
-                                                cv=3,
+                                                cv=10,
                                                 opt_metric="roc_auc",
                                                 n_iter_search=30,
                                                 seed=123,
