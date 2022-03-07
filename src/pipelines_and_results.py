@@ -51,9 +51,9 @@ def run_ml_pipeline(pipeline_folder):
             dataset = IO.load_dataset_with_features(dataset_path)
 
             rf = RF()
-            optimiser = SklearnKerasHyperparameterOptimiser(rf, dataset, 3,
+            optimiser = SklearnKerasHyperparameterOptimiser(rf, dataset, 10,
                                                             "roc_auc",
-                                                            1,
+                                                            30,
                                                             123,
                                                             os.path.join(pipeline_folder, f"{ml_feature}/"),
                                                             f"{feature_selection_method}_rf_model")
@@ -61,9 +61,9 @@ def run_ml_pipeline(pipeline_folder):
             new_pipeline.register(optimiser)
 
             svm = SVM()
-            optimiser = SklearnKerasHyperparameterOptimiser(svm, dataset, 3,
+            optimiser = SklearnKerasHyperparameterOptimiser(svm, dataset, 10,
                                                             "roc_auc",
-                                                            1,
+                                                            30,
                                                             123,
                                                             os.path.join(pipeline_folder, f"{ml_feature}/"),
                                                             f"{feature_selection_method}_svm_model")
@@ -71,9 +71,9 @@ def run_ml_pipeline(pipeline_folder):
             new_pipeline.register(optimiser)
 
             dnn = DNN(train_dataset=dataset)
-            optimiser = SklearnKerasHyperparameterOptimiser(dnn, dataset, 3,
+            optimiser = SklearnKerasHyperparameterOptimiser(dnn, dataset, 10,
                                                             "roc_auc",
-                                                            1,
+                                                            30,
                                                             123,
                                                             os.path.join(pipeline_folder, f"{ml_feature}/"),
                                                             f"{feature_selection_method}_dnn_model.h5")
