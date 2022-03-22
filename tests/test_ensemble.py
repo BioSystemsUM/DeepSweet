@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from deepsweet_models import DeepSweetRF, DeepSweetDNN
+from deepsweet_models import DeepSweetRF, DeepSweetDNN, DeepSweetTextCNN
 from ensemble import Ensemble
 
 

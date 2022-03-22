@@ -107,7 +107,7 @@ class RNNFeatureGenerator:
                 keep.append(dataset.ids[i])
 
         dataset.select(keep)
-        size = len(dataset.y)
+        size = len(dataset.mols)
         print("encoding smiles")
         X = []
         for i, mol in enumerate(dataset.mols):
