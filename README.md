@@ -176,7 +176,7 @@ textcnn = DeepSweetTextCNN(models_folder_path)
 predictions3, dataset = textcnn.predict(molecules)
 
 # predict with GAT
-gat = DeepSweetGAT(models_folder_path)
+gat = DeepSweetGAT(models_folder_path, "cpu")
 predictions4, dataset = gat.predict(molecules)
 ```
 
@@ -191,7 +191,9 @@ molecules = ["CN1CCC[C@H]1C2=CN=CC=C2", "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"]
 list_of_models = []
 list_of_models.append(DeepSweetRF(models_folder_path, "2d", "SelectFromModelFS"))
 list_of_models.append(DeepSweetDNN(models_folder_path, "rdk", "all"))
-list_of_models.append(DeepSweetGCN(models_folder_path))
+
+# it is necessary to insert the gpu number because it is a torch model and the device needs to be specified
+list_of_models.append(DeepSweetGCN(models_folder_path, "gpu:0"))
 list_of_models.append(DeepSweetSVM(models_folder_path, "ecfp4", "all"))
 list_of_models.append(DeepSweetDNN(models_folder_path, "atompair_fp", "SelectFromModelFS"))
 list_of_models.append(DeepSweetBiLSTM(models_folder_path))

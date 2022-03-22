@@ -138,7 +138,8 @@ class PreBuiltEntToEnd(PreBuiltModel, ABC):
 
 class DeepSweetGAT(PreBuiltEntToEnd):
 
-    def __init__(self, model_folder_path):
+    def __init__(self, model_folder_path, device):
+        self.device = device
         super().__init__(model_folder_path, "GAT")
 
     def load(self):
@@ -146,13 +147,14 @@ class DeepSweetGAT(PreBuiltEntToEnd):
         f = open(os.path.join(self.model_folder_path, "GAT_hyperparameters.json"), )
         hyperparams = json.load(f)
         f.close()
-        self.model = GAT()
+        self.model = GAT(self.device)
         self.model.load(model_path, **hyperparams)
 
 
 class DeepSweetGCN(PreBuiltEntToEnd):
 
-    def __init__(self, model_folder_path):
+    def __init__(self, model_folder_path, device):
+        self.device = device
         super().__init__(model_folder_path, "GCN")
 
     def load(self, **kwargs):
@@ -160,7 +162,7 @@ class DeepSweetGCN(PreBuiltEntToEnd):
         f = open(os.path.join(self.model_folder_path, "GCN_hyperparameters.json"), )
         hyperparams = json.load(f)
         f.close()
-        self.model = GCN()
+        self.model = GCN(self.device)
         self.model.load(model_path, **hyperparams)
 
 
