@@ -42,9 +42,9 @@ class Ensemble:
         for i, model in enumerate(self.list_of_models):
 
             if isinstance(model, Model):
-                predictions = model.predict(dataset)
+                predictions, dataset = model.predict(dataset)
             elif isinstance(model, PreBuiltModel):
-                predictions = model.predict(dataset, standardize=False)
+                predictions, dataset = model.predict(dataset, standardize=False)
             else:
                 raise Exception("Please insert a list of valid models")
 

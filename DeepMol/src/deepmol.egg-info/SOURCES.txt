@@ -1,5 +1,4 @@
 LICENSE
-README.md
 setup.py
 src/Datasets/Datasets.py
 src/Datasets/__init__.py
