@@ -43,9 +43,7 @@ class FeatureSelector(Step):
             columns = list(pandas_dset.columns[3:])
 
             if self.estimator is None:
-                self.estimator = RandomForestClassifier(bootstrap=False, class_weight={0: 2.0, 1: 1.0},
-                                                        criterion='entropy', max_depth=80, min_samples_leaf=2,
-                                                        n_estimators=900, n_jobs=-1)
+                self.estimator = RandomForestClassifier()
 
             loader = CSVLoader(dataset_path,
                                features_fields=columns,

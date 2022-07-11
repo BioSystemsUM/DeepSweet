@@ -55,6 +55,10 @@ class FeaturesGenerator(Step):
 
         train_dataset = self.balance_dataset(train_dataset)
 
+        scaler.fit(train_dataset, columns=columns_to_scale)
+        scaler.transform(train_dataset, columns=columns_to_scale)
+        scaler.save_scaler(os.path.join(folder_path, folder_path_to_save, "scaler"))
+
         for dataset_type in datasets:
             loader = CSVLoader(os.path.join(folder_path, "%s_dataset.csv" % dataset_type),
                                mols_field='mols',
@@ -65,14 +69,8 @@ class FeaturesGenerator(Step):
             featurize_method.featurize(dataset, remove_nans_axis=axis)
 
             if columns_to_scale is not None:
-                full_dataset = train_dataset.merge([dataset])
 
-                scaler.fit(full_dataset, columns_to_scale)
-
-                scaler.transform(train_dataset, columns_to_scale)
                 scaler.transform(dataset, columns_to_scale)
-
-                scaler.save_scaler(os.path.join(folder_path, folder_path_to_save, "scaler"))
 
             os.makedirs(os.path.join(folder_path, folder_path_to_save), exist_ok=True)
 

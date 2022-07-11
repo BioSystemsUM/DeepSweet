@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 
 from compoundFeaturization import deepChemFeaturizers
 from deepchem.models import TextCNNModel
@@ -110,7 +111,7 @@ def run_dl_pipeline(pipeline_folder):
     pipeline.register(optimiser_gat)
     pipeline.register(optimiser_gcn)
 
-    full_dataset = train_dataset.merge([test_dataset])
+    full_dataset = deepcopy(train_dataset)
     full_dataset.ids = full_dataset.mols
     char_dict, length = TextCNNModel.build_char_dict(full_dataset)
     text_cnn = TextCNN(char_dict, length)
@@ -140,9 +141,7 @@ def run_dl_pipeline(pipeline_folder):
     pipeline.register(optimiser_graphconv)
 
     train_dataset = IO.load_dataset(os.path.join(pipeline_folder, "train_dataset.csv"))
-    test_dataset = IO.load_dataset(os.path.join(pipeline_folder, "test_dataset.csv"))
-    full_dataset = train_dataset.merge([test_dataset])
-    featurizer = RNNFeatureGenerator(full_dataset)
+    featurizer = RNNFeatureGenerator(train_dataset)
     featurizer.featurize(train_dataset)
     featurizer.save_input_params(os.path.join(pipeline_folder, "BiLSTM/"))
     featurizer.save_input_params(os.path.join(pipeline_folder, "LSTM/"))

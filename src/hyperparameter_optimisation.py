@@ -90,6 +90,8 @@ class EndToEndHyperparameterOptimiser(HyperparameterOptimiser, ABC):
     def optimise(self):
         self.featurization_method.featurize(self.train_dataset)
 
+        self.train_dataset.remove_duplicates()
+
         optimizer = HyperparamOpt_CV(self.model_wrapper.model_construction_function)
 
         self.model_wrapper.model, self.best_hyperparams, self.all_results = \

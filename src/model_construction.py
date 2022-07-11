@@ -3,6 +3,7 @@ import os
 from abc import ABC, abstractmethod
 
 import joblib
+import tensorflow
 import torch
 from Datasets.Datasets import Dataset
 from deepchem.models import torch_models, GraphConvModel, TextCNNModel
@@ -123,10 +124,6 @@ class SVM(Model):
                                      'gamma': ['scale', 'auto'],
                                      'degree': [2, 3],
                                      'coef0': [0.1, 0.2, 0.3, 0.4, 0.5],
-                                     'class_weight': [{0: 1.0, 1: 1.0},
-                                                      {0: 2.0, 1: 1.0},
-                                                      {0: 1.0, 1: 2.0},
-                                                      {0: 1.0, 1: 3.0}],
                                      'kernel': ['linear', 'poly', 'rbf', 'sigmoid']}
 
 
@@ -153,10 +150,7 @@ class RF(Model):
                                      'min_samples_split': [2, 5, 10, 15, 20, 25, 50, 100],
                                      'criterion': ['gini', 'entropy'],
                                      'bootstrap': [True, False],
-                                     'class_weight': [{0: 1.0, 1: 1.0},
-                                                      {0: 2.0, 1: 1.0},
-                                                      {0: 1.0, 1: 2.0},
-                                                      {0: 1.0, 1: 3.0}]}
+                                     }
 
     def _construct_model(self):
         def rf_constructor(n_estimators=10, max_features='auto', bootstrap='gini',
@@ -446,7 +440,9 @@ class TextCNN(Model):
         mode = 'classification'
         self.hyperparameters_grid = {'n_embedding': [75, 32, 64],
                                      'kernel_sizes': [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20],
-                                                      # DeepChem default. Their code says " Multiple convolutional layers with different filter widths", so I'm not repeating kernel_sizes
+                                                      # DeepChem default. Their code says " Multiple convolutional
+                                                      # layers with different filter widths", so I'm not repeating
+                                                      # kernel_sizes
                                                       [1, 2, 3, 4, 5, 7, 10, 15],
                                                       [3, 4, 5, 7, 10, 15],
                                                       [3, 4, 5, 7, 10],
@@ -524,11 +520,11 @@ class BiLSTM(Model):
         for i, layer in enumerate(LSTM_layers):
             if i == 0:
                 model.add(
-                    Bidirectional(CuDNNLSTM(layer, input_shape=(input_dim1, input_dim2), return_sequences=True)))
+                    Bidirectional(tf.keras.layers.LSTM(layer, input_shape=(input_dim1, input_dim2), return_sequences=True)))
             elif i == len(LSTM_layers) - 1:
-                model.add(Bidirectional(CuDNNLSTM(layer, return_sequences=False)))
+                model.add(Bidirectional(tf.keras.layers.LSTM(layer, return_sequences=False)))
             else:
-                model.add(Bidirectional(CuDNNLSTM(layer, return_sequences=True)))
+                model.add(Bidirectional(tf.keras.layers.LSTM(layer, return_sequences=True)))
 
             model.add(Dropout(dropout))
 
@@ -634,11 +630,11 @@ class LSTM(Model):
         for i, layer in enumerate(LSTM_layers):
             if i == 0:
                 model.add(
-                    CuDNNLSTM(layer, input_shape=(input_dim1, input_dim2), return_sequences=True))
+                    tf.keras.layers.LSTM(layer, input_shape=(input_dim1, input_dim2), return_sequences=True))
             elif i == len(LSTM_layers) - 1:
-                model.add(CuDNNLSTM(layer, return_sequences=False))
+                model.add(tf.keras.layers.LSTM(layer, return_sequences=False))
             else:
-                model.add(CuDNNLSTM(layer, return_sequences=True))
+                model.add(tf.keras.layers.LSTM(layer, return_sequences=True))
 
             model.add(Dropout(dropout))
 

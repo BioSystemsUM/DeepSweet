@@ -48,7 +48,7 @@ class RNNFeatureGenerator:
     def smiles_encoder(self, smiles):
         X = np.zeros((self.max_len, len(self.unique_chars)))
         encoding = atomwise_tokenizer(smiles)
-        if self.max_len >= len(encoding) > 10:
+        if self.max_len >= len(encoding):
             for i, c in enumerate(encoding):
                 if c in self.char_to_int:
                     X[i, self.char_to_int[c]] = 1
