@@ -141,6 +141,7 @@ class PipelineUtils:
         if "2d" in model_folder_path:
             scaler = MinMaxScaler()
             scaler.load_scaler(os.path.join(model_folder_path, "scaler"))
+            scaler.scaler_object.clip = True
             scaler.transform(dataset)
 
         return dataset

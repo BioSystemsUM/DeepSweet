@@ -20,7 +20,8 @@ class Ensemble:
         self.list_of_models = list_of_models
         self.models_folder_path = models_folder_path
 
-    def predict(self, molecules: Union[List[Mol], List[str]], ids=None):
+    def predict(self, molecules: Union[List[Mol], List[str]], ids=None, filter_non_valid_molecules=False,
+                apply_minus_sd=True):
 
         if ids is None:
             ids = [i for i in range(len(molecules))]
@@ -36,7 +37,8 @@ class Ensemble:
             'NEUTRALISE_CHARGE_LATE': True}
 
         CustomStandardizer(params=standardisation_params).standardize(dataset)
-        dataset, not_valid_molecules = PipelineUtils.filter_valid_sequences(self.models_folder_path, dataset)
+        if filter_non_valid_molecules:
+            dataset, not_valid_molecules = PipelineUtils.filter_valid_sequences(self.models_folder_path, dataset)
         all_predictions = []
 
         for i, model in enumerate(self.list_of_models):
@@ -51,16 +53,18 @@ class Ensemble:
             predictions = [i[1] for i in predictions]
             all_predictions.append(predictions)
 
-        def mean_minus_variance(a):
+        def mean_minus_standard_deviation(a):
             mean = np.mean(a)
             std = np.std(a)
             return mean - std
 
         final_all_predictions = np.empty(shape=len(dataset.ids))
         for prediction in all_predictions:
+
             final_all_predictions = np.column_stack((final_all_predictions, prediction))
 
         final_all_predictions = np.delete(final_all_predictions, 0, 1)
-        mean_predictions = np.apply_along_axis(mean_minus_variance, 1, final_all_predictions)
+        if apply_minus_sd:
+            final_all_predictions = np.apply_along_axis(mean_minus_standard_deviation, 1, final_all_predictions)
 
-        return mean_predictions, dataset, not_valid_molecules
+        return final_all_predictions, dataset

@@ -100,7 +100,7 @@ class ResultsReport(Report):
 
         return [roc_auc_score_, precision_score_, accuracy_score_, recall_score_, f1_score_]
 
-    def predict_for_all_features(self, descriptor, file, models_folder_path):
+    def predict_for_all_features(self, descriptor, file, models_folder_path, blend=True):
 
         if descriptor == "2d":
             features_to_keep = [i for i in range(208)]
@@ -108,7 +108,10 @@ class ResultsReport(Report):
             features_to_keep = [i for i in range(2048)]
 
         scores = self.predict_on_test_set(file, models_folder_path, features_to_keep)
-        blend_scores = self.predict_on_blend_test_set(file, models_folder_path, features_to_keep)
+        if blend:
+            blend_scores = self.predict_on_blend_test_set(file, models_folder_path, features_to_keep)
+        else:
+            blend_scores = None
 
         return scores, blend_scores
 
@@ -130,7 +133,7 @@ class ResultsReport(Report):
         columns = pandas_dset.columns[3:]
         columns = list(columns[features_to_select])
 
-        test_dataset = os.path.join(dataset_folder_path, "non_isomeric_test_set.csv")
+        test_dataset = os.path.join(dataset_folder_path, "test_dataset.csv")
 
         loader = CSVLoader(test_dataset,
                            features_fields=columns,
@@ -151,7 +154,7 @@ class ResultsReport(Report):
 
         return [roc_auc_score_, precision_score_, accuracy_score_, recall_score_, f1_score_]
 
-    def predict_for_feature_selection_method(self, file, method, models_folder_path):
+    def predict_for_feature_selection_method(self, file, method, models_folder_path, blend=True):
 
         features_to_keep = os.path.join(models_folder_path, "feature_selection_config.json")
         f = open(features_to_keep, )
@@ -160,26 +163,29 @@ class ResultsReport(Report):
 
         features_to_keep = sorted(data[method])
         scores = self.predict_on_test_set(file, models_folder_path, features_to_keep)
-        blend_scores = self.predict_on_blend_test_set(file, models_folder_path, features_to_keep)
+        if blend:
+            blend_scores = self.predict_on_blend_test_set(file, models_folder_path, features_to_keep)
+        else:
+            blend_scores = None
 
         return scores, blend_scores
 
-    def predict_for_feature_selection_methods(self, file, models_folder_path):
+    def predict_for_feature_selection_methods(self, file, models_folder_path, blend=True):
         scores, blend_scores, feature_selection_method = None, None, None
         if "KbestFS" in file:
             feature_selection_method = "KbestFS"
             scores, blend_scores = self.predict_for_feature_selection_method(file, feature_selection_method,
-                                                                             models_folder_path)
+                                                                             models_folder_path, blend)
 
         elif "SelectFromModelFS" in file:
             feature_selection_method = "SelectFromModelFS"
             scores, blend_scores = self.predict_for_feature_selection_method(file, feature_selection_method,
-                                                                             models_folder_path)
+                                                                             models_folder_path, blend)
 
         elif "Boruta" in file:
             feature_selection_method = "Boruta"
             scores, blend_scores = self.predict_for_feature_selection_method(file, feature_selection_method,
-                                                                             models_folder_path)
+                                                                             models_folder_path, blend)
 
         return scores, blend_scores, feature_selection_method
 
@@ -262,15 +268,20 @@ class ResultsReport(Report):
 
         return model
 
-    def run_all_ml(self, models_folder_path, output_file_path):
-        results = DataFrame(columns=["descriptor", "feature selection", "algorithm", "test_roc_auc_score",
-                                     "test_precision_score", "test_ner_score", "test_recall_score", "test_f1_score",
-                                     "blend_roc_auc_score", "blend_precision_score", "blend_ner_score",
-                                     "blend_recall_score", "blend_f1_score"])
+    def run_all_ml(self, models_folder_path, output_file_path, blend=True):
+        if blend:
+            results = DataFrame(columns=["descriptor", "feature selection", "algorithm", "test_roc_auc_score",
+                                         "test_precision_score", "test_ner_score", "test_recall_score", "test_f1_score",
+                                         "blend_roc_auc_score", "blend_precision_score", "blend_ner_score",
+                                         "blend_recall_score", "blend_f1_score"])
+        else:
+            results = DataFrame(columns=["descriptor", "feature selection", "algorithm", "test_roc_auc_score",
+                                         "test_precision_score", "test_ner_score", "test_recall_score", "test_f1_score",
+                                         ])
 
         folders = os.listdir(models_folder_path)
         for folder_path in folders:
-            if ".csv" not in folder_path:
+            if ".csv" not in folder_path and ".keep" not in folder_path:
                 model_folder_path = os.path.join(models_folder_path, folder_path)
                 files = os.listdir(model_folder_path)
                 for file in files:
@@ -279,10 +290,11 @@ class ResultsReport(Report):
                         algorithm = None
                         if "all" in file:
                             feature_selection_method = "none"
-                            scores, blend_scores = self.predict_for_all_features(descriptor, file, models_folder_path)
+                            scores, blend_scores = self.predict_for_all_features(descriptor, file, model_folder_path,
+                                                                                 blend)
                         else:
                             scores, blend_scores, feature_selection_method = \
-                                self.predict_for_feature_selection_methods(file, models_folder_path)
+                                self.predict_for_feature_selection_methods(file, model_folder_path, blend)
 
                         if "rf" in file:
                             algorithm = "rf"
@@ -298,7 +310,8 @@ class ResultsReport(Report):
                         results.at[last_id, "feature selection"] = feature_selection_method
                         results.at[last_id, "algorithm"] = algorithm
                         results.at[last_id, 3:8] = scores
-                        results.at[last_id, 8:13] = blend_scores
+                        if blend:
+                            results.at[last_id, 8:13] = blend_scores
 
         results.to_csv(output_file_path, index=False)
 

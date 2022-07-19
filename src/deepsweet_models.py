@@ -195,7 +195,7 @@ class DeepSweetTextCNN(PreBuiltEntToEnd):
 
     def load(self, **kwargs):
         model_path = os.path.join(self.model_folder_path, "TextCNN.h5")
-        f = open(os.path.join("../resources/models/TextCNN/", "input_params.json"), )
+        f = open(os.path.join(self.model_folder_path, "input_params.json"), )
         hyperparams = json.load(f)
         f.close()
 

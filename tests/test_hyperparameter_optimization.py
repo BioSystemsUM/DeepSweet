@@ -7,7 +7,7 @@ from deepsweet_utils import IO
 from generate_features_rnn import RNNFeatureGenerator
 from hyperparameter_optimisation import SklearnKerasHyperparameterOptimiser, EndToEndHyperparameterOptimiser
 
-from model_construction import RF, SVM, DNN, GAT, BiLSTM, LSTM, GCN, TextCNN, GraphConv
+from model_construction import RF, SVM, DNN, GAT, BiLSTM, GCN, TextCNN, GraphConv
 
 
 class TestHyperparameterOptimization(TestCase):
