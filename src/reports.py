@@ -288,30 +288,34 @@ class ResultsReport(Report):
                     if "hyperparameter" not in file and "model" in file:
                         descriptor = folder_path
                         algorithm = None
-                        if "all" in file:
-                            feature_selection_method = "none"
-                            scores, blend_scores = self.predict_for_all_features(descriptor, file, model_folder_path,
-                                                                                 blend)
-                        else:
-                            scores, blend_scores, feature_selection_method = \
-                                self.predict_for_feature_selection_methods(file, model_folder_path, blend)
+                        try:
+                            if "all" in file:
+                                feature_selection_method = "none"
+                                scores, blend_scores = self.predict_for_all_features(descriptor, file, model_folder_path,
+                                                                                     blend)
+                            else:
+                                scores, blend_scores, feature_selection_method = \
+                                    self.predict_for_feature_selection_methods(file, model_folder_path, blend)
 
-                        if "rf" in file:
-                            algorithm = "rf"
+                            if "rf" in file:
+                                algorithm = "rf"
 
-                        elif "svm" in file:
-                            algorithm = "svm"
+                            elif "svm" in file:
+                                algorithm = "svm"
 
-                        elif "dnn" in file:
-                            algorithm = "dnn"
+                            elif "dnn" in file:
+                                algorithm = "dnn"
 
-                        last_id = results.shape[0]
-                        results.at[last_id, "descriptor"] = descriptor
-                        results.at[last_id, "feature selection"] = feature_selection_method
-                        results.at[last_id, "algorithm"] = algorithm
-                        results.at[last_id, 3:8] = scores
-                        if blend:
-                            results.at[last_id, 8:13] = blend_scores
+                            last_id = results.shape[0]
+                            results.at[last_id, "descriptor"] = descriptor
+                            results.at[last_id, "feature selection"] = feature_selection_method
+                            results.at[last_id, "algorithm"] = algorithm
+                            results.at[last_id, 3:8] = scores
+                            if blend:
+                                results.at[last_id, 8:13] = blend_scores
+
+                        except ValueError as e:
+                            print(f"WARNING: {file} does not work for test set")
 
         results.to_csv(output_file_path, index=False)
 
